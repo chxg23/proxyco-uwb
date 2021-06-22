@@ -1,0 +1,21 @@
+syscfg.vals:
+  BOOTUTIL_SIGN_EC256: 1
+  BOOTUTIL_USE_MBED_TLS: 0
+  BOOTUTIL_USE_TINYCRYPT: 1
+  USE_MCUBOOT: 1
+
+  # Turn off all master bus
+  SPI_0_MASTER: 0
+  SPI_1_MASTER: 0
+  SPI_2_MASTER: 0
+  SPI_3_MASTER: 0
+  # Turn off RNG peripheral
+  TRNG: 0
+  # Turn off all onboard peripherals
+  PN5180_ONB: 0
+  M41T82_ONB: 0
+  FRAM_ONB: 0
+  NEOPIXELS_ONB: 0
+  BUZZER_ONB: 0
+  MCU_LFCLK_SOURCE: LFSYNTH
+  MCU_DCDC_ENABLED: 0

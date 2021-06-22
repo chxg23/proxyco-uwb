@@ -1,0 +1,255 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+syscfg.defs:
+    BSP_NRF5340:
+        description: 'Set to indicate that BSP has NRF5340'
+        value: 1
+
+    IS_READER_V2:
+        description: 'Set to indicate that this is Reader v2'
+        value: 1
+
+    SOFT_PWM:
+        description: 'Enable soft PWM'
+        value: 0
+
+    BSP_NRF5340_NET_ENABLE:
+       description: >
+            When enabled Network Core of nRF5340 is started on init.
+       value: 1
+
+    ###############
+    #  NOR Flash  #
+    ###############
+    FLASH_ONB:
+        description: 'On board external NOR flash'
+        value: 1
+
+    FLASH_ONB_CS_PIN:
+        description: 'SPI NOR flash chip select pin number'
+        value: 11
+
+    FLASH_ONB_SPI_BUS:
+        description: 'SPI interface used for external NOR flash'
+        value: '""'
+
+    FLASH_ONB_TOTAL_PAGES:
+        description: 'SPI interface used for external NOR flash'
+        value: 0x80000
+
+    ##########
+    #  SRAM  #
+    ##########
+    SRAM_ONB:
+        description: 'On board external SRAM'
+        value: 1
+
+    SRAM_ONB_CS_PIN:
+        description: 'SPI external SRAM chip select pin number'
+        value: 7
+
+    SRAM_ONB_SPI_BUS:
+        description: 'SPI interface used for external SRAM'
+        value: '""'
+
+    ###########
+    #  Accel  #
+    ###########
+    LIS2DT_ONB:
+        description: 'On board LIS2DT accelerometer'
+        value: 1
+
+    LIS2DT_ONB_I2C_BUS:
+        description: 'I2C interface used for LIS2DT'
+        value: '""'
+
+    LIS2DT_ONB_INT1_PIN_HOST:
+        description: 'Host interrupt pin for LIS2DT INT 1'
+        value: 32
+
+    LIS2DT_ONB_INT1_PIN_DEVICE:
+        description: 'Interrupt pin number 1 or 2 on LIS2DT'
+        value: 1
+
+    LIS2DT_ONB_INT_CFG_ACTIVE:
+        description: 'Set 0 for active-low, 1 for active-high'
+        value: 1
+
+    LIS2DT_ONB_I2C_ADDR:
+        description: 'Slave address for LIS2DT'
+        value: 0x19
+    #########
+    #  UWB  #
+    #########
+    DWM3000_ONB:
+        description: 'On board DWM3000 UWB module based on DW3110'
+        value: 0
+
+    DWM3000_ONB_CS:
+        description: 'Host SPI CS pin for DWM3000'
+        value: 6
+
+    DWM3000_ONB_SPI_BUS:
+        description: 'SPI interface used for DWM3000'
+        value: '""'
+
+    DWM3000_ONB_EXTON:
+        description: >
+            Host External device enable. Asserted during wake up process
+            and held active until device enters sleep mode
+        value: 19
+
+    DWM3000_ONB_SPIPOL:
+        description: 'Host SPI polarity selection pin for DWM3000. Also general purpose IO after'
+        value: 40
+
+    DWM3000_ONB_SPIPHA:
+        description: 'Host SPI phase selection pin for DWM3000. Also general purpose IO after'
+        value: 39
+
+    DWM3000_ONB_INT:
+        description: 'Host interrupt pin for DWM3000 IRQ. Active high.'
+        value: 38
+
+    DWM3000_ONB_RST:
+        description: 'Host pin for DWM3000 reset line. Active low'
+        value: 37
+
+    DWM3000_ONB_WAKEUP:
+        description: >
+            Host pin. When asserted into its active high state, the WAKEUP pin
+            brings the DW3110 out of SLEEP or DEEPSLEEP states into operational mode
+        value: 33
+
+    PROXY_READER_V2_SYSINIT_STAGE:
+        description: >
+            Sysinit stage for the PROXY_READER_V2 BSP.
+        value: 400
+
+
+syscfg.vals:
+    BLE_HCI_TRANSPORT: nrf5340
+    MCU_DCDC_ENABLED: 1
+    # Bus Driver
+    BUS_DRIVER_PRESENT: 1
+    MCU_BUS_DRIVER_I2C_USE_TWIM: 1
+    # Always use non-blocking API
+    SPI_HAL_USE_NOBLOCK: 1
+    # FCB
+    CONFIG_FCB_FLASH_AREA: FLASH_AREA_CONFIG
+    # Event recorder
+    EVENT_FCB_FLASH_AREA: FLASH_AREA_EVENT_RECORDER
+    EVENT_FCB_SECTOR_COUNT: 16 # (FLASH_AREA_EVENT_RECORDER / 4)
+
+    # Enable instruction and data cache
+    MCU_CACHE_ENABLED: 1
+
+    # Use NFC pins P0.02 and P0.03 as GPIOs
+    # I2C lines are connected on these pins
+    NFC_PINS_AS_GPIO: 1
+
+    ##################
+    #  BUS MASTER 0  #
+    ##################
+    # Enable SPI master on 0
+    SPI_0_MASTER: 1
+    SPI_0_MASTER_PIN_MISO: 17
+    SPI_0_MASTER_PIN_MOSI: 18
+    SPI_0_MASTER_PIN_SCK: 16
+
+    # Disable I2C_0 because only one peripheral can use the bus
+    I2C_0: 0
+    # Disable UART pins supporting OSDP. TODO move this.
+    UART_0: 0
+    UART_0_PIN_TX: 20
+    UART_0_PIN_RX: 22
+    UART_0_PIN_RTS: -1
+    UART_0_PIN_CTS: -1
+
+    ##################
+    #  BUS MASTER 1  #
+    ##################
+    # Enable I2C master on 1
+    I2C_1: 1
+    I2C_1_PIN_SCL: 35
+    I2C_1_PIN_SDA: 34
+
+    # Devices on I2C 1
+
+    # Accel
+    LIS2DT_ONB_I2C_BUS: '"i2c1"'
+
+    ##################
+    #  BUS MASTER 2  #
+    ##################
+    # Enable SPI master on 2
+    SPI_2_MASTER: 1
+    SPI_2_MASTER_PIN_MISO: 10
+    SPI_2_MASTER_PIN_MOSI: 9
+    SPI_2_MASTER_PIN_SCK: 8
+ 
+    # Onboard external NOR Flash
+    SPIFLASH_W25Q01JV: 1
+    SPIFLASH: 1
+    SPIFLASH_SPI_NUM: 2
+    SPIFLASH_SPI_CS_PIN: 11
+    SPIFLASH_BAUDRATE: 8000
+    SPIFLASH_MANUFACTURER: 0xef
+    SPIFLASH_MEMORY_TYPE: 0x70
+    SPIFLASH_MEMORY_CAPACITY: 0x21
+    SPIFLASH_SECTOR_COUNT: 0x8000
+    SPIFLASH_SECTOR_SIZE: 0x1000
+    SPIFLASH_PAGE_SIZE: 0x100
+    SPIFLASH_TCE_TYPICAL: 200000000 # us
+    SPIFLASH_TCE_MAXIMUM: 1000000000 # us
+    SPIFLASH_MAX_DIE: 2
+
+    FLASH_ONB_SPI_BUS: '"spi2"'
+
+    SRAM_ONB_SPI_BUS: '"spi2"'
+    SPIRAM_0: 1
+    SPIRAM_0_CS_PIN: MYNEWT_VAL(SRAM_ONB_CS_PIN)
+    SPIRAM_0_SPI_BUS: MYNEWT_VAL(SRAM_ONB_SPI_BUS)
+    SPIRAM_0_SPI_NUM: 2
+    SPIRAM_0_SIZE: 0x40000
+    SPIRAM_0_DUMMY_BYTES: 1
+
+    ##################
+    #  BUS MASTER 3  #
+    ##################
+    # Enable I2C master on 3
+    I2C_3: 1
+    I2C_3_PIN_SCL: 3
+    I2C_3_PIN_SDA: 2
+
+    ##################
+    #  SPI MASTER 4  #
+    ##################
+    # Enable SPI master 4
+    SPI_4_MASTER: 1
+    SPI_4_MASTER_PIN_MISO: 15
+    SPI_4_MASTER_PIN_MOSI: 14
+    SPI_4_MASTER_PIN_SCK: 13
+
+    # Devices on SPI 4
+
+    DWM3000_ONB_SPI_BUS: '"spi4"'
+
+syscfg.vals.!BOOT_LOADER:
+    MCU_LFCLK_SOURCE: LFXO

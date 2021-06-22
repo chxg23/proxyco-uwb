@@ -1,0 +1,3 @@
+target.app: "@mcuboot/boot/mynewt"
+target.bsp: "hw/bsp/proxy-reader-soc-v2-app"
+target.build_profile: optimized

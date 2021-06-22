@@ -1,0 +1,8 @@
+pkg.name: "targets/mcuboot_reader-v2_app"
+pkg.type: target
+pkg.description: 
+pkg.author: 
+pkg.homepage:
+
+pkg.deps:
+  - "@apache-mynewt-core/sys/stats/full"

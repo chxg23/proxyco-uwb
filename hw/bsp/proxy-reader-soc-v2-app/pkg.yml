@@ -1,0 +1,52 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+pkg.name: hw/bsp/proxy-reader-soc-v2-app
+pkg.type: bsp
+pkg.description: BSP definition for Proxy Reader v2 on nRF5340 - App Core
+pkg.author: "Proxy Inc>"
+pkg.homepage: "https://proxy.com/"
+pkg.keywords:
+    - nrf5340
+    - proxy
+
+pkg.cflags:
+    - '-DNRF5340_XXAA_APPLICATION'
+    - '-DNRFX_CLOCK_ENABLED'
+    - '-mcpu=cortex-m33'
+
+pkg.cflags.HARDFLOAT:
+    - -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
+pkg.deps:
+    - "@apache-mynewt-core/hw/mcu/nordic/nrf5340"
+    - "@apache-mynewt-core/libc/baselibc"
+    - "@apache-mynewt-core/sys/flash_map"
+
+pkg.deps.FLASH_ONB:
+    - "@apache-mynewt-core/hw/drivers/flash/spiflash"
+
+pkg.deps.SRAM_ONB:
+    - "@apache-mynewt-core/hw/drivers/ram/spiram"
+
+pkg.deps.LIS2DT_ONB:
+    - "@apache-mynewt-core/hw/drivers/sensors/lis2dw12"
+
+pkg.deps.MAX98360A_ONB:
+    - "@apache-mynewt-core/hw/drivers/i2s/i2s_nrfx/pkg.yml"
