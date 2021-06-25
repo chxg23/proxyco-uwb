@@ -1,0 +1,3 @@
+target.app: "apps/twr_aloha"
+target.bsp: "hw/bsp/pca10095_dw3000"
+target.build_profile: debug

@@ -1,0 +1,32 @@
+syscfg.vals:
+    LOG_LEVEL: 2
+    DW3000_DEVICE_0: 1
+    CONSOLE_UART: 1
+    CONSOLE_RTT: 0
+    CONSOLE_UART_FLOW_CONTROL: UART_FLOW_CTL_NONE
+    BLE_VERSION: 51
+    BLE_HCI_VS: 1
+    BLE_HCI_TRANSPORT: nrf5340
+    BSP_NRF5340_NET_ENABLE: 1
+    NRF5340_EMBED_NET_CORE: 1
+    CIR_ENABLED: 0
+
+    # Use channel nine because we can
+    UWBCFG_DEF_CH: "\"9\""
+    # Set the role to anchor here
+    UWBCFG_DEF_ROLE: "\"0x4\""
+    # Antenna delays of dwm3000 are default lower
+    UWBCFG_DEF_TX_ANTDLY: '"0x3fe0"'
+    UWBCFG_DEF_RX_ANTDLY: '"0x3fe0"'
+    # Enable all diagnostics
+    UWBCFG_DEF_RX_DIAG_EN: '"0x7fff"'
+    # Enable frame filter to have twr_ss_ack working
+    UWBCFG_DEF_FRAME_FILTER: '"0xF"'
+
+    # Increased hold-offs due to huge overhead in non-blocking
+    # busdriver spim calls
+    TWR_SS_TX_HOLDOFF: 0x700
+    TWR_SS_EXT_TX_HOLDOFF: 0x700
+    TWR_DS_TX_HOLDOFF: 0x700
+    TWR_DS_EXT_TX_HOLDOFF: 0x700
+    RNG_TX_HOLDOFF: 0x700
