@@ -474,7 +474,7 @@ hal_dw3000_read_noblock(struct _dw3000_dev_instance_t * inst, const uint8_t * cm
         return rc;
     }
 
-#if MYNEWT_VAL(DW3000_HAL_SPI_BUFFER_SIZE) < 1024 || MYNEWT_VAL(DW3000_HAL_SPI_MAX_CNT) < 1028
+#if MYNEWT_VAL(UWB_TX_BUFFER_SIZE) < 1024 || MYNEWT_VAL(DW3000_HAL_SPI_MAX_CNT) < 1028
     rc = dpl_sem_pend(&inst->spi_nb_sem, DPL_TIMEOUT_NEVER);
     if (rc != DPL_OK) {
         inst->uwb_dev.status.sem_error = 1;
@@ -677,7 +677,7 @@ hal_dw3000_write_noblock(struct _dw3000_dev_instance_t * inst, const uint8_t * c
         return rc;
     }
 
-#if MYNEWT_VAL(DW3000_HAL_SPI_BUFFER_SIZE) < 1024 || MYNEWT_VAL(DW3000_HAL_SPI_MAX_CNT) < 1028
+#if MYNEWT_VAL(UWB_TX_BUFFER_SIZE) < 1024 || MYNEWT_VAL(DW3000_HAL_SPI_MAX_CNT) < 1028
     rc = dpl_sem_pend(&inst->spi_nb_sem, DPL_TIMEOUT_NEVER);
     if (rc != DPL_OK) {
         inst->uwb_dev.status.sem_error = 1;

@@ -94,11 +94,6 @@ STATS_NAME_END(rng_stat_section)
 #define RNG_STATS_INC(__X) {}
 #endif
 
-//#define DIAGMSG(s,u) printf(s,u)
-#ifndef DIAGMSG
-#define DIAGMSG(s,u)
-#endif
-
 int uwb_rng_cli_register(void);
 static bool rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs);
 static bool tx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs);
@@ -129,36 +124,11 @@ static float rng_bias_poly_PRF16[] ={
 #endif
 #endif
 
+static struct uwb_rng_instance g_uwb_rng_instances[MYNEWT_VAL(UWB_RNG_MAXNUM_INSTANCES)] = {0};
+
 static struct uwb_rng_config g_config = {
     .tx_holdoff_delay = MYNEWT_VAL(RNG_TX_HOLDOFF),       // Send Time delay in usec.
     .rx_timeout_delay = MYNEWT_VAL(RNG_RX_TIMEOUT)       // Receive response timeout in usec
-};
-
-static twr_frame_t g_twr_frames[][4] = {
-#if MYNEWT_VAL(UWB_DEVICE_0)
-    {
-        [0] = {.fctrl = 0, 0},
-        [1] = {.fctrl = 0, 0},
-        [2] = {.fctrl = 0, 0},
-        [3] = {.fctrl = 0, 0},
-    },
-#endif
-#if MYNEWT_VAL(UWB_DEVICE_1)
-    {
-        [0] = {.fctrl = 0, 0},
-        [1] = {.fctrl = 0, 0},
-        [2] = {.fctrl = 0, 0},
-        [3] = {.fctrl = 0, 0},
-    },
-#endif
-#if MYNEWT_VAL(UWB_DEVICE_2)
-    {
-        [0] = {.fctrl = 0, 0},
-        [1] = {.fctrl = 0, 0},
-        [2] = {.fctrl = 0, 0},
-        [3] = {.fctrl = 0, 0},
-    },
-#endif
 };
 
 static struct uwb_mac_interface g_cbs[] = {
@@ -202,30 +172,26 @@ static struct uwb_mac_interface g_cbs[] = {
 };
 
 /**
- * @fn uwb_rng_init(struct uwb_dev * inst, struct uwb_rng_config * config, uint16_t nframes)
+ * @fn uwb_rng_init(struct uwb_dev * inst, struct uwb_rng_config * config)
  * @brief API to initialise the ranging by setting all the required configurations and callbacks.
  *
  * @param inst      Pointer to struct uwb_dev.
  * @param config    Pointer to the structure struct uwb_rng_config.
- * @param nframes   Number of buffers defined to store the ranging data.
  *
  * @return struct uwb_rng_instance
  */
 struct uwb_rng_instance *
-uwb_rng_init(struct uwb_dev * dev, struct uwb_rng_config * config, uint16_t nframes)
+uwb_rng_init(struct uwb_dev * dev, struct uwb_rng_config * config)
 {
     dpl_error_t err;
     struct uwb_rng_instance *rng;
     assert(dev);
-    rng = (struct uwb_rng_instance*)uwb_mac_find_cb_inst_ptr(dev, UWBEXT_RNG);
-    if (rng == NULL ) {
-        /* struct + flexible array member */
-        rng = (struct uwb_rng_instance *) calloc(1, sizeof(*rng) + nframes * sizeof(twr_frame_t *));
-        assert(rng);
-        rng->status.selfmalloc = 1;
-        rng->nframes = nframes;
-    }
+    assert(dev->idx < MYNEWT_VAL(UWB_RNG_MAXNUM_INSTANCES));
+
+    rng = &g_uwb_rng_instances[dev->idx];
+    rng->nframes = MYNEWT_VAL(UWB_RNG_NFRAMES);
     rng->dev_inst = dev;
+
 #if MYNEWT_VAL(UWB_WCS_ENABLED)
     rng->ccp_inst = (struct uwb_ccp_instance*)uwb_mac_find_cb_inst_ptr(dev, UWBEXT_CCP);
     assert(rng->ccp_inst);
@@ -277,29 +243,7 @@ void
 uwb_rng_free(struct uwb_rng_instance * rng)
 {
     assert(rng);
-    if (rng->status.selfmalloc)
-        free(rng);
-    else
-        rng->status.initialized = 0;
-}
-
-/**
- * @fn uwb_rng_set_frames(struct uwb_rng_instance * inst, twr_frame_t twr[], uint16_t nframes)
- * @brief API to set the pointer to the twr buffers.
- *
- * @param inst      Pointer to struct uwb_rng_instance.
- * @param twr[]     Pointer to twr buffers.
- * @param nframes   Number of buffers defined to store the ranging data.
- *
- * @return void
- */
-inline void
-uwb_rng_set_frames(struct uwb_rng_instance * rng, twr_frame_t twr[], uint16_t nframes)
-{
-    uint16_t i;
-    assert(nframes <= rng->nframes);
-    for (i = 0; i < nframes; i++)
-        rng->frames[i] = &twr[i];
+    rng->status.initialized = 0;
 }
 
 /**
@@ -406,7 +350,7 @@ uwb_rng_calc_rel_tx(struct uwb_rng_instance * rng, struct uwb_rng_txd *ret,
 {
     /* Rx-frame data duration, as this is after the r-marker it eats into the time
      * we have to respond. */
-    uint16_t data_duration = uwb_usecs_to_dwt_usecs(uwb_phy_data_duration(rng->dev_inst, rx_data_len, 0));
+    uint16_t data_duration = uwb_usecs_to_dwt_usecs(uwb_phy_data_duration(rng->dev_inst, rx_data_len, NULL));
     ret->response_tx_delay = ts + (((uint64_t) cfg->tx_holdoff_delay + rng->frame_shr_duration + data_duration) << 16);
     ret->response_timestamp = (ret->response_tx_delay & 0xFFFFFFFE00UL) + rng->dev_inst->tx_antenna_delay;
     return;
@@ -451,7 +395,7 @@ uwb_rng_request_wto(struct uwb_rng_instance * rng, uint16_t dst_address, uwb_dat
     dpl_error_t err;
     uint16_t data_duration, frame_duration;
     struct uwb_dev * inst = rng->dev_inst;
-    twr_frame_t * frame  = rng->frames[(rng->idx+1)%rng->nframes];
+    twr_frame_t * frame  = &rng->frames[(rng->idx+1)%rng->nframes];
     struct uwb_rng_config * config = uwb_rng_get_config(rng, code);
     if (!config) {
         slog("No such rng type: %d\n", code);
@@ -478,7 +422,7 @@ uwb_rng_request_wto(struct uwb_rng_instance * rng, uint16_t dst_address, uwb_dat
     frame->fctrl |=  (config->fctrl_req_ack)? UWB_FCTRL_ACK_REQUESTED : 0;
     frame->seq_num = rng->seq_num;
     frame->code = code;
-    frame->PANID = inst->pan_id;
+    frame->pan_id = inst->pan_id;
     frame->src_address = inst->my_short_address;
     frame->dst_address = dst_address;
 
@@ -494,8 +438,8 @@ uwb_rng_request_wto(struct uwb_rng_instance * rng, uint16_t dst_address, uwb_dat
     uwb_write_tx_fctrl(inst, sizeof(ieee_rng_request_frame_t), 0);
     uwb_set_wait4resp(inst, true);
 
-    data_duration = uwb_usecs_to_dwt_usecs(uwb_phy_data_duration(inst, sizeof(ieee_rng_response_frame_t), 0));
-    frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, sizeof(ieee_rng_response_frame_t), 0));
+    data_duration = uwb_usecs_to_dwt_usecs(uwb_phy_data_duration(inst, sizeof(ieee_rng_response_frame_t), NULL));
+    frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, sizeof(ieee_rng_response_frame_t), NULL));
     rng->frame_shr_duration = frame_duration - data_duration;
 
     // The wait for response counter starts on the completion of the entire outgoing frame.
@@ -515,7 +459,7 @@ uwb_rng_request_wto(struct uwb_rng_instance * rng, uint16_t dst_address, uwb_dat
     // The timeout counter starts when the receiver in re-enabled. The timeout event
     // should occur just after the inbound frame is received
     if (code == UWB_DATA_CODE_SS_TWR_EXT) {
-        frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, TWR_EXT_FRAME_SIZE, 0));
+        frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, TWR_EXT_FRAME_SIZE, NULL));
     }
     uwb_set_rx_timeout(inst, frame_duration + config->rx_timeout_delay +
                        inst->config.rx.timeToRxStable);
@@ -552,7 +496,6 @@ struct uwb_dev_status
 uwb_rng_request(struct uwb_rng_instance * rng, uint16_t dst_address, uwb_dataframe_code_t code)
 {
     return uwb_rng_request_wto(rng, dst_address, code, DPL_TIMEOUT_NEVER);
-
 }
 
 /**
@@ -580,7 +523,7 @@ uwb_rng_listen(struct uwb_rng_instance * rng, int32_t timeout, uwb_dev_modes_t m
     uwb_set_rxauto_disable(rng->dev_inst, true);
 
     /* Precalculate shr duration */
-    rng->frame_shr_duration = uwb_usecs_to_dwt_usecs(uwb_phy_SHR_duration(rng->dev_inst, 0));
+    rng->frame_shr_duration = uwb_usecs_to_dwt_usecs(uwb_phy_SHR_duration(rng->dev_inst, NULL));
 
     if (rng->control.delay_start_enabled)
         uwb_set_delay_start(inst, rng->delay);
@@ -696,8 +639,8 @@ uwb_rng_twr_to_tof(struct uwb_rng_instance * rng, uint16_t idx)
     dpl_float64_t skew;
     dpl_float64_t ToF = DPL_FLOAT64_I32_TO_F64(0.0);
 
-    twr_frame_t * first_frame = rng->frames[(uint16_t)(idx-1)%rng->nframes];
-    twr_frame_t * frame = rng->frames[(idx)%rng->nframes];
+    twr_frame_t * first_frame = &rng->frames[(uint16_t)(idx-1)%rng->nframes];
+    twr_frame_t * frame = &rng->frames[(idx)%rng->nframes];
 
 #if MYNEWT_VAL(UWB_WCS_ENABLED)
     skew = DPL_FLOAT64_INIT(0.0);
@@ -849,7 +792,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
     switch(rng->code) {
         case UWB_DATA_CODE_SS_TWR ... UWB_DATA_CODE_DS_TWR_EXT_END:
             {
-                twr_frame_t * frame = rng->frames[(rng->idx+1)%rng->nframes]; // speculative frame advance
+                twr_frame_t * frame = &rng->frames[(rng->idx+1)%rng->nframes]; // speculative frame advance
                 /* Clear meta and angle-information */
                 uwb_rng_clear_twr_data(&frame->remote);
                 uwb_rng_clear_twr_data(&frame->local);
@@ -968,15 +911,17 @@ complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
     twr_frame_t * frame;
     dpl_float64_t time_of_flight;
     struct uwb_rng_instance * rng = (struct uwb_rng_instance *)cbs->inst_ptr;
-    RNG_STATS_INC(complete_cb);
+
     if (inst->fctrl != FCNTL_IEEE_RANGE_16 &&
         inst->fctrl != (FCNTL_IEEE_RANGE_16|UWB_FCTRL_ACK_REQUESTED))
         return false;
 
+    RNG_STATS_INC(complete_cb);
+
     /* Calculate Local results and diagnostics.
      * XXX TODO: Generalise antenna distance */
     rng->idx_current = (rng->idx)%rng->nframes;
-    frame = rng->frames[rng->idx_current];
+    frame = &rng->frames[rng->idx_current];
     time_of_flight = uwb_rng_twr_to_tof(rng, rng->idx_current);
     frame->local.spherical.range = uwb_rng_tof_to_meters(time_of_flight);
 
@@ -1017,7 +962,7 @@ static bool
 tx_final_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
 {
     struct uwb_rng_instance * rng = (struct uwb_rng_instance *)cbs->inst_ptr;
-    twr_frame_t * frame = rng->frames[(rng->idx)%rng->nframes];
+    twr_frame_t * frame = &rng->frames[(rng->idx)%rng->nframes];
 
     frame->remote.cartesian.x = DPL_FLOAT64_INIT(MYNEWT_VAL(LOCAL_COORDINATE_X));
     frame->remote.cartesian.y = DPL_FLOAT64_INIT(MYNEWT_VAL(LOCAL_COORDINATE_Y));
@@ -1088,8 +1033,7 @@ uwb_rng_pkg_init(void)
     for (i=0;i<ARRAY_SIZE(g_cbs);i++) {
         udev = uwb_dev_idx_lookup(i);
         if (!udev) continue;
-        g_cbs[i].inst_ptr = rng = uwb_rng_init(udev, &g_config, sizeof(g_twr_frames[i])/sizeof(g_twr_frames[i][0]));
-        uwb_rng_set_frames(rng, g_twr_frames[i], sizeof(g_twr_frames[0])/sizeof(g_twr_frames[0][0]));
+        g_cbs[i].inst_ptr = rng = uwb_rng_init(udev, &g_config);
         uwb_mac_append_interface(udev, &g_cbs[i]);
 
         dpl_event_init(&rng->complete_event, complete_ev_cb, (void*)rng);

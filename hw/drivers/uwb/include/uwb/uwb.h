@@ -1088,8 +1088,13 @@ struct uwb_dev {
     int32_t carrier_integrator;                 //!< Carrier integrator (should prob not be here)
     int32_t rxttcko;                            //!< Preamble Integrator
     struct uwb_dev_rxdiag *rxdiag;              //!< Pointer to rx diagnostics structure
+#ifdef __KERNEL__
     uint8_t *rxbuf;                             //!< Local receive buffer
     uint8_t *txbuf;                             //!< Local transmit buffer, needs aligned allocation
+#else
+    uint8_t rxbuf[MYNEWT_VAL(UWB_RX_BUFFER_SIZE)]; //!< Local receive buffer
+    uint8_t txbuf[MYNEWT_VAL(UWB_TX_BUFFER_SIZE)]; //!< Local transmit buffer
+#endif
     uint16_t rxbuf_size;                        //!< Size of local receive buffer
     uint16_t txbuf_size;                        //!< Size of local transmit buffer
 

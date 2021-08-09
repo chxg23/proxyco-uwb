@@ -10,11 +10,6 @@ syscfg.defs:
           at compile time.
         restrictions:
           - '(UWB_DEV_RXDIAG_MAXLEN > 180)'
-    DW3000_HAL_SPI_BUFFER_SIZE:
-        description: >
-          Size of spi read/write buffer, sets the
-          maximum allowed nonblocking read operation
-        value: 256
     DW3000_HAL_SPI_MAX_CNT:
         description: >
           The maximum number of bytes in a single transfer that the

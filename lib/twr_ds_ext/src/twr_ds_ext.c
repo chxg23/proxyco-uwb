@@ -192,12 +192,16 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
         return false;
     }
 
+    int frame_idx = (rng->idx)%rng->nframes;
+    int frame_idx_p1 = (rng->idx+1)%rng->nframes;
+    int frame_idx_m1 = (rng->idx-1)%rng->nframes;
+    /* Frame already read within loader layers. */
+    twr_frame_t * frame = &rng->frames[frame_idx];
+
     switch(rng->code){
         case UWB_DATA_CODE_DS_TWR_EXT:
             {
                 // This code executes on the device that is responding to a original request
-
-                twr_frame_t * frame = rng->frames[(rng->idx)%rng->nframes];
 
                 uint64_t request_timestamp = inst->rxtimestamp;
                 uwb_rng_calc_rel_tx(rng, &txd, &g_config, request_timestamp, inst->frame_len);
@@ -230,7 +234,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
                 /* Setup when to listen for response, relative the end of our transmitted frame */
                 uwb_set_wait4resp_delay(inst, g_config.tx_holdoff_delay -
                                         inst->config.rx.timeToRxStable);
-                uwb_set_rx_timeout(inst, uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, TWR_EXT_FRAME_SIZE, 0)) +
+                uwb_set_rx_timeout(inst, uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, TWR_EXT_FRAME_SIZE, NULL)) +
                                    g_config.rx_timeout_delay + inst->config.rx.timeToRxStable);
                 break;
             }
@@ -243,8 +247,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
                 if (inst->frame_len != sizeof(ieee_rng_response_frame_t))
                     break;
 
-                twr_frame_t * frame = rng->frames[(rng->idx)%rng->nframes];
-                twr_frame_t * next_frame = rng->frames[(rng->idx+1)%rng->nframes];
+                twr_frame_t * next_frame = &rng->frames[frame_idx_p1];
 
                 uint64_t request_timestamp = inst->rxtimestamp;
                 frame->request_timestamp = next_frame->request_timestamp = uwb_read_txtime_lo32(inst); // This corresponds to when the original request was actually sent
@@ -298,7 +301,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
                 /* Setup when to listen for response, relative the end of our transmitted frame */
                 uwb_set_wait4resp_delay(inst, g_config.tx_holdoff_delay -
                                         inst->config.rx.timeToRxStable);
-                uwb_set_rx_timeout(inst, uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, TWR_EXT_FRAME_SIZE, 0)) +
+                uwb_set_rx_timeout(inst, uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, TWR_EXT_FRAME_SIZE, NULL)) +
                                    g_config.rx_timeout_delay + inst->config.rx.timeToRxStable);
                 break;
             }
@@ -307,8 +310,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
             {
                 // This code executes on the device that responded to the original request, and is now preparing the final timestamps
 
-                twr_frame_t * previous_frame = rng->frames[(uint16_t)(rng->idx-1)%rng->nframes];
-                twr_frame_t * frame = rng->frames[(rng->idx)%rng->nframes];
+                twr_frame_t * previous_frame = &rng->frames[frame_idx_m1];
 
                 previous_frame->request_timestamp = frame->request_timestamp;
                 previous_frame->response_timestamp = frame->response_timestamp;

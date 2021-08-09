@@ -1323,7 +1323,7 @@ dw3000_dev_init(struct os_dev *odev, void *arg)
     }
 
     udev->rxbuf_size = MYNEWT_VAL(UWB_RX_BUFFER_SIZE);
-    udev->txbuf_size = MYNEWT_VAL(DW3000_HAL_SPI_BUFFER_SIZE);
+    udev->txbuf_size = MYNEWT_VAL(UWB_TX_BUFFER_SIZE);
     uwb_dev_init(udev);
 
     /* Setup common uwb interface */

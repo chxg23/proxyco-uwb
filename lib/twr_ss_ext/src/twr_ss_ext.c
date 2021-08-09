@@ -198,7 +198,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
     if(dpl_sem_get_count(&rng->sem) == 1) // unsolicited inbound
         return false;
 
-    twr_frame_t * frame = rng->frames[(rng->idx)%rng->nframes]; // Frame already read within loader layers.
+    twr_frame_t * frame = &rng->frames[(rng->idx)%rng->nframes]; // Frame already read within loader layers.
 
     switch(rng->code){
         case UWB_DATA_CODE_SS_TWR_EXT:
@@ -246,7 +246,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
                 /* Setup when to listen for response, relative the end of our transmitted frame */
                 uwb_set_wait4resp_delay(inst, g_config.tx_holdoff_delay -
                                         inst->config.rx.timeToRxStable);
-                uwb_set_rx_timeout(inst, uwb_phy_frame_duration(inst, sizeof(twr_frame_final_t), 0) +
+                uwb_set_rx_timeout(inst, uwb_phy_frame_duration(inst, sizeof(twr_frame_final_t), NULL) +
                                    g_config.rx_timeout_delay + inst->config.rx.timeToRxStable);
 
                 // Disable default behavor, do not RXENAB on RXFCG thereby avoiding rx timeout events on sucess

@@ -231,7 +231,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
     }
     rng->status.rx_ack_expected = 0;
     rng->status.tx_ack_expected = 0;
-    frame = rng->frames[(rng->idx)%rng->nframes]; // Frame already read within loader layers.
+    frame = &rng->frames[(rng->idx)%rng->nframes]; // Frame already read within loader layers.
 
     /* Receive the ack response from the other side and store timestamp */
     if (inst->fctrl == UWB_FCTRL_FRAME_TYPE_ACK) {
@@ -242,7 +242,7 @@ rx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
             return false;
         }
         rng->ack_rx_timestamp = inst->rxtimestamp;
-        uint16_t frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, sizeof(ieee_rng_response_frame_t), 0));
+        uint16_t frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, sizeof(ieee_rng_response_frame_t), NULL));
         /* Need to set, not just adjust, timeout here */
         uwb_set_rx_timeout(inst, g_config.tx_holdoff_delay + frame_duration + g_config.rx_timeout_delay);
         return true;
@@ -359,7 +359,7 @@ tx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
     }
     rng->status.tx_ack_expected = 0;
 
-    twr_frame_t * frame = rng->frames[(rng->idx)%rng->nframes]; // Frame already read in rx_complete_cb
+    twr_frame_t * frame = &rng->frames[(rng->idx)%rng->nframes]; // Frame already read in rx_complete_cb
 
     if (rng->code == UWB_DATA_CODE_SS_TWR_ACK) {
         // This code executes on the device that is responding to a request
@@ -377,7 +377,7 @@ tx_complete_cb(struct uwb_dev * inst, struct uwb_mac_interface * cbs)
         uwb_write_tx_fctrl(inst, sizeof(ieee_rng_response_frame_t), 0);
         uwb_set_wait4resp(inst, true);
         uwb_set_wait4resp_delay(inst, 0);
-        uint16_t frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, sizeof(ieee_rng_response_frame_t), 0));
+        uint16_t frame_duration = uwb_usecs_to_dwt_usecs(uwb_phy_frame_duration(inst, sizeof(ieee_rng_response_frame_t), NULL));
         uwb_set_rx_timeout(inst, g_config.tx_holdoff_delay + frame_duration + g_config.rx_timeout_delay);
 
         /* Disable default behavor, do not RXENAB on RXFCG

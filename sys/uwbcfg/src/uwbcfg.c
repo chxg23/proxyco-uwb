@@ -73,7 +73,9 @@ char g_uwb_config[CFGSTR_MAX][CFGSTR_STRLEN] = {
     MYNEWT_VAL(UWBCFG_DEF_TXRF_POWER_FINE),   /* txrf_power_fine */
     MYNEWT_VAL(UWBCFG_DEF_RX_ANTDLY),         /* rx_antdly */
     MYNEWT_VAL(UWBCFG_DEF_TX_ANTDLY),         /* tx_antdly */
-    MYNEWT_VAL(UWBCFG_DEF_RX_ANTSEP),            /* rx_ant_separation */
+#if MYNEWT_VAL(UWBCFG_INCLUDE_RX_ANTSEP)
+    MYNEWT_VAL(UWBCFG_DEF_RX_ANTSEP),         /* rx_ant_separation */
+#endif
     MYNEWT_VAL(UWBCFG_DEF_EXT_CLKDLY),        /* external clockdelay */
     MYNEWT_VAL(UWBCFG_DEF_ROLE),              /* role */
     MYNEWT_VAL(UWBCFG_DEF_FRAME_FILTER),      /* MAC Frame Filter */
@@ -108,7 +110,9 @@ const char* g_uwbcfg_str[] = {
     "txrf_power_fine",
     "rx_antdly",
     "tx_antdly",
+#if MYNEWT_VAL(UWBCFG_INCLUDE_RX_ANTSEP)
     "rx_ant_separation",
+#endif
     "ext_clkdly",
     "role",
     "frame_filter",
@@ -226,8 +230,9 @@ uwbcfg_commit_to_inst(struct uwb_dev * inst, char cfg[CFGSTR_MAX][CFGSTR_STRLEN]
     conf_value_from_str(cfg[CFGSTR_TX_ANTDLY], CONF_INT16, (void*)&inst->tx_antenna_delay, 0);
 
     /* Antenna separation, used in aoa calculations */
+#if MYNEWT_VAL(UWBCFG_INCLUDE_RX_ANTSEP)
     inst->rx_ant_separation = DPL_FLOAT32_FROM_F64(strtod_soft(cfg[CFGSTR_RX_ANTSEP], 0));
-    //pr_info("antsep: "DPL_FLOAT32_PRINTF_PRIM"\n", DPL_FLOAT32_PRINTF_VALS(inst->rx_ant_separation));
+#endif
 
     /* External clock delay */
     conf_value_from_str(cfg[CFGSTR_EXT_CLKDLY], CONF_INT32, (void*)&inst->ext_clock_delay, 0);

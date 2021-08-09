@@ -218,8 +218,7 @@ uwb_dev_init(struct uwb_dev * inst)
             assert(inst->txbuf);
         }
 #else
-        inst->txbuf = malloc(inst->txbuf_size);
-        assert(inst->txbuf);
+        /* txbuf is statically allocated in embedded */
 #endif
     }
     if (!inst->rxbuf) {
@@ -230,8 +229,7 @@ uwb_dev_init(struct uwb_dev * inst)
             assert(inst->rxbuf);
         }
 #else
-        inst->rxbuf = malloc(inst->rxbuf_size);
-        assert(inst->rxbuf);
+        /* rxbuf is statically allocated in embedded */
 #endif
     }
 }
@@ -249,14 +247,7 @@ uwb_dev_deinit(struct uwb_dev * inst)
         inst->rxbuf = 0;
     }
 #else
-    if (inst->txbuf) {
-        free(inst->txbuf);
-        inst->txbuf = 0;
-    }
-    if (inst->rxbuf) {
-        free(inst->rxbuf);
-        inst->rxbuf = 0;
-    }
+    /* rx and tx buffers are statically allocated in embedded */
 #endif
 }
 

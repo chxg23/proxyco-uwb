@@ -77,12 +77,12 @@ struct uwb_rng_config{
 //! Range control parameters.
 typedef struct _uwb_rng_control_t{
     uint16_t delay_start_enabled:1;  //!< Set for enabling delayed start
+    uint16_t delay_listen_enabled:1; //!< Set for enabling delayed start
     uint16_t complete_after_tx:1;    //!< Set by ranging state machine to say that exchange is complete after next tx
 }uwb_rng_control_t;
 
 //! Range status parameters
 typedef struct _uwb_rng_status_t{
-    uint16_t selfmalloc:1;           //!< Internal flag for memory garbage collection
     uint16_t initialized:1;          //!< Instance allocated
     uint16_t mac_error:1;            //!< Error caused due to frame filtering
     uint16_t invalid_code_error:1;   //!< Error due to invalid code
@@ -171,12 +171,12 @@ struct uwb_rng_instance{
     struct dpl_event complete_event;        //!< Range complete event
 
     SLIST_HEAD(, rng_config_list) rng_configs;
-    twr_frame_t * frames[];                 //!< Pointer to twr buffers
+    twr_frame_t frames[MYNEWT_VAL(UWB_RNG_NFRAMES)]; //!< Pointer to twr buffers
 };
 
 
 void rng_pkg_init(void);
-struct uwb_rng_instance * uwb_rng_init(struct uwb_dev * dev, struct uwb_rng_config * config, uint16_t nframes);
+struct uwb_rng_instance * uwb_rng_init(struct uwb_dev * dev, struct uwb_rng_config * config);
 void uwb_rng_free(struct uwb_rng_instance * rng);
 struct uwb_dev_status uwb_rng_config(struct uwb_rng_instance * rng, struct uwb_rng_config * config);
 struct uwb_dev_status uwb_rng_request(struct uwb_rng_instance * rng, uint16_t dst_address, uwb_dataframe_code_t code);
@@ -185,7 +185,6 @@ struct uwb_dev_status uwb_rng_listen(struct uwb_rng_instance * rng, int32_t time
 struct uwb_dev_status uwb_rng_request_delay_start(struct uwb_rng_instance * rng, uint16_t dst_address, uint64_t delay, uwb_dataframe_code_t code);
 struct uwb_dev_status uwb_rng_listen_delay_start(struct uwb_rng_instance * rng, uint64_t dx_time, uint32_t timeout, uwb_dev_modes_t mode);
 struct uwb_rng_config * uwb_rng_get_config(struct uwb_rng_instance * rng, uwb_dataframe_code_t code);
-void uwb_rng_set_frames(struct uwb_rng_instance * rng, twr_frame_t twr[], uint16_t nframes);
 void uwb_rng_clear_twr_data(struct _twr_data_t *s);
 dpl_float64_t uwb_rng_twr_to_tof(struct uwb_rng_instance * rng, uint16_t idx);
 dpl_float64_t uwb_rng_tof_to_meters(dpl_float64_t ToF);

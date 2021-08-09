@@ -11,6 +11,9 @@ syscfg.defs:
     UWBCFG_APPLY_AT_INIT:
         description: 'Commit config at init'
         value: 1
+    UWBCFG_INCLUDE_RX_ANTSEP:
+        description: 'Include Rx-Antenna separation config'
+        value: 1
     UWBCFG_DEF_CH:
         description: 'Default UWB Channel'
         value: '"5"'

@@ -22,10 +22,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
-#include "sysinit/sysinit.h"
-#include "os/os.h"
+#include <os/mynewt.h>
 #include "bsp/bsp.h"
-#include "imgmgr/imgmgr.h"
 #include "hal/hal_gpio.h"
 #include "hal/hal_bsp.h"
 #ifdef ARCH_sim
@@ -37,13 +35,6 @@
 #include <config/config.h>
 #include <uwbcfg/uwbcfg.h>
 #include <uwb_rng/rng_encode.h>
-//#define DIAGMSG(s,u) printf(s,u)
-#ifndef DIAGMSG
-#define DIAGMSG(s,u)
-#endif
-#if MYNEWT_VAL(CIR_ENABLED)
-#include <cir/cir.h>
-#endif
 
 static void slot_complete_cb(struct dpl_event *ev);
 
@@ -223,9 +214,9 @@ int main(int argc, char **argv){
     printf(",\"part_id\"=\"%lX\"",(uint32_t)(udev->euid&0xffffffff));
     printf(",\"lot_id\"=\"%lX\"}\n",(uint32_t)(udev->euid>>32));
     printf("{\"utime\": %lu,\"msg\": \"frame_duration = %d usec\"}\n",
-           utime, uwb_phy_frame_duration(udev, sizeof(twr_frame_final_t), 0));
+           utime, uwb_phy_frame_duration(udev, sizeof(twr_frame_final_t), NULL));
     printf("{\"utime\": %lu,\"msg\": \"SHR_duration = %d usec\"}\n",
-           utime,uwb_phy_SHR_duration(udev,0 ));
+           utime, uwb_phy_SHR_duration(udev, NULL));
     printf("{\"utime\": %lu,\"msg\": \"holdoff = %d usec\"}\n",utime,(uint16_t)ceilf(uwb_dwt_usecs_to_usecs(rng->config.tx_holdoff_delay)));
 
 #if MYNEWT_VAL(TWR_SS_ACK_ENABLED)

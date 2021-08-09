@@ -51,7 +51,7 @@ int rng_encode_output(int idx, char *buf, size_t len);
 void
 rng_encode(struct uwb_rng_instance * rng)
 {
-    twr_frame_t * frame = rng->frames[rng->idx_current];
+    twr_frame_t * frame = &rng->frames[rng->idx_current];
 
     rng_json_t json = {
 #if MYNEWT_VAL(UWB_WCS_ENABLED)

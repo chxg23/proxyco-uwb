@@ -188,7 +188,7 @@ typedef union {
     struct _ieee_rng_request_frame_t{
         uint16_t fctrl;             //!< Frame control (0x8841 to indicate a data frame using 16-bit addressing)
         uint8_t seq_num;            //!< Sequence number, incremented for each new frame
-        uint16_t PANID;             //!< PANID
+        uint16_t pan_id;            //!< PAN ID
         uint16_t dst_address;       //!< Destination address
         uint16_t src_address;       //!< Source address
         uint16_t code;              //!< Response code for the request
