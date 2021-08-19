@@ -1,0 +1,33 @@
+syscfg.vals:
+    # Route console to RTT
+    CONSOLE_UART: 1
+    CONSOLE_UART_BAUD: '115200'
+    CONSOLE_UART_TX_BUF_SIZE: '1024'
+    CONSOLE_RTT: 0
+    CONSOLE_HISTORY: ram
+    CONSOLE_HISTORY_RAM_HISTORY_SIZE: 8
+
+    CONFIG_FCB: 1
+
+    UWB_DEVICE_0: 1
+    FS_XTALT_AUTOTUNE_ENABLED: 0
+    HARDFLOAT: 1
+    FLOAT_USER: 1
+    RNG_VERBOSE: 2
+    UWBCFG_INCLUDE_RX_ANTSEP: 0
+    STATS_NAMES: 1
+    STATS_CLI: 1
+    CONFIG_CLI: 1
+    UWB_CLI: 1
+    UWB_CLI_BACKTRACE: 1
+    SHELL_TASK: 1
+
+    # Enable newtmgr commands.
+    STATS_MGMT: 1
+    LOG_MGMT: 1
+    CONFIG_MGMT: 1
+
+syscfg.defs:
+    ANCHOR_ADDRESS:
+        description: 'Address of anchor'
+        value: 0x1234
